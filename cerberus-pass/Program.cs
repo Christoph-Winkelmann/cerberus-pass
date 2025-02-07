@@ -21,26 +21,30 @@ do
 
   var userInput = Console.ReadLine();
 
-  switch (userInput)
+  int menuChoice;
+
+  if (!int.TryParse(userInput, out menuChoice))
+    continue;
+
+  switch ((MenuOptions)menuChoice)
   {
-    case "1":
-      // Liste ausgeben
+    case MenuOptions.List:
       var vault = manager.GetAll();
       foreach (var item in vault)
       {
         Console.WriteLine(item);
       }
       break;
-    case "2":
+
+    case MenuOptions.GetOne:
       // todo: Exception wenn title nicht existiert
-      // Ein Passwort vollständig ausgeben
       Console.WriteLine("Welchen Eintrag willst du ansehen? (Title):");
       var titleToPrint = Console.ReadLine();
       var entry = manager.GetEntry(titleToPrint);
       Console.WriteLine(entry + $"\t{entry.Password}");
       break;
-    case "3":
-      // Erstellen
+
+    case MenuOptions.Create:
       Console.WriteLine("Gebe einen Titel für den Eintrag an:");
       var title = Console.ReadLine();
       Console.WriteLine("Gebe einen Login für den Eintrag an:");
@@ -48,11 +52,18 @@ do
       Console.WriteLine("Gebe ein Passwort für den Eintrag an:");
       var password = Console.ReadLine();
       var newEntry = manager.CreateEntry(title, login, password);
-      Console.WriteLine("Neuer Eintrag erfolgreich erstellt:");
-      Console.WriteLine(newEntry); // Gibt Type aus;
+      if (newEntry is null)
+      {
+        System.Console.WriteLine($"Eintrag mit {title} existiert bereits.\nWolltest du diesen Updaten? Oder erstelle einen neuen mit einem anderen Titel.");
+      }
+      else
+      {
+        Console.WriteLine("Neuer Eintrag erfolgreich erstellt:");
+        Console.WriteLine(newEntry); // Gibt Type aus;
+      }
       break;
-    case "4":
-      // Update
+
+    case MenuOptions.Update:
       Console.WriteLine("Welchen Eintrag willst du ändern? (Title):");
       var title_to_change = Console.ReadLine();
       Console.WriteLine(
@@ -72,8 +83,8 @@ do
       ));
       Console.WriteLine($"Eintrag {updatedEntry.Title} wurde erfolgreich aktuallisiert.");
       break;
-    case "5":
-      // Delete
+
+    case MenuOptions.Delete:
       Console.WriteLine("Welchen Eintrag willst du Löschen? (Title):");
       var titleToDelete = Console.ReadLine();
       if (manager.DeleteEntry(titleToDelete))
@@ -82,9 +93,11 @@ do
         Console.WriteLine(
           $"Fehler beim löschen des Eintrags: {titleToDelete} wurde nicht gefunden!");
       break;
+
     default:
       // Fehler anzeigen -> Eingabe-Hint (1-5)
       // Eingabe wiederholen
+      System.Console.WriteLine("Falsche Eingabe! Valide Optionen: 1-5");
       break;
   }
   Console.ReadKey();

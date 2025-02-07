@@ -2,76 +2,80 @@
 
 public class PasswordManager
 {
-    private List<PasswordEntry> vault;
+  private List<PasswordEntry> vault;
 
-    public PasswordManager()
+  public PasswordManager()
+  {
+    // vault = new List<PasswordEntry>();
+    // vault = new();
+    // vault = [];
+    vault = [];
+  }
+
+  public List<PasswordEntry> GetAll() => vault;
+
+  public PasswordEntry CreateEntry(
+    string title,
+    string login,
+    string password,
+    string website = "",
+    string note = "")
+  {
+    if (vault.Any(x => x.Title == title))
     {
-        // vault = new List<PasswordEntry>();
-        // vault = new();
-        // vault = [];
-        vault = [];
+      return null;
     }
+    var newEntry = new PasswordEntry(
+      title,
+      login,
+      password,
+      website,
+      note
+    );
+    vault.Add(newEntry);
+    return newEntry;
+  }
 
-    public List<PasswordEntry> GetAll() => vault;
+  // GetEntry
+  public PasswordEntry GetEntry(string title) =>
+    vault.Find(x => x.Title == title);
 
-    public PasswordEntry CreateEntry(
-      string title,
-      string login,
-      string password,
-      string website = "",
-      string note = "")
+
+  // UpdateEntry
+  public PasswordEntry UpdateEntry(string titleToChange, PasswordEntry newEntry)
+  {
+    var indexToUpdate = vault.FindIndex(
+      x => x.Title == titleToChange);
+    vault[indexToUpdate] = newEntry;
+    return vault[indexToUpdate];
+
+    // var entryToChange = vault.Find(x => x.Title == titleToChange);
+    // entryToChange = newEntry;
+  }
+
+  // DeleteEntry
+  public bool DeleteEntry(string titleToDelete) =>
+    vault.RemoveAll(x => x.Title == titleToDelete) > 0;
+
+  /*
+  public bool DeleteEntry(string titleToDelete)
+  {
+    var deleteCount = 0;
+    for (int i = 0; i > vault.Count; i++)
     {
-        var newEntry = new PasswordEntry(
-          title,
-          login,
-          password,
-          website,
-          note
-        );
-        vault.Add(newEntry);
-        return newEntry;
+      if (vault[i].Title == titleToDelete)
+      {
+        vault.Remove(vault[i]);
+        deleteCount++;
+      }
     }
-
-    // GetEntry
-    public PasswordEntry GetEntry(string title) =>
-      vault.Find(x => x.Title == title);
-
-
-    // UpdateEntry
-    public PasswordEntry UpdateEntry(string titleToChange, PasswordEntry newEntry)
+    if (deleteCount > 0)
     {
-        var indexToUpdate = vault.FindIndex(
-          x => x.Title == titleToChange);
-        vault[indexToUpdate] = newEntry;
-        return vault[indexToUpdate];
-
-        // var entryToChange = vault.Find(x => x.Title == titleToChange);
-        // entryToChange = newEntry;
+      return true;
     }
-
-    // DeleteEntry
-    public bool DeleteEntry(string titleToDelete) =>
-      vault.RemoveAll(x => x.Title == titleToDelete) > 0;
-
-    /*
-    public bool DeleteEntry(string titleToDelete)
+    else
     {
-      var deleteCount = 0;
-      for (int i = 0; i > vault.Count; i++)
-      {
-        if (vault[i].Title == titleToDelete)
-        {
-          vault.Remove(vault[i]);
-          deleteCount++;
-        }
-      }
-      if (deleteCount > 0)
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-    } */
+      return false;
+    }
+  } */
 }
