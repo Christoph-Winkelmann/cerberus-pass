@@ -1,5 +1,6 @@
 ﻿namespace cerberus_pass;
-
+// PascalCase => BegriffstrennungenImmerErsterBuchstabeGroß
+// => Properties, Funktionen / Methods, Classes, Namespaces, Enums
 public class PasswordEntry
 {
     public string Title { get; set; }
@@ -8,19 +9,24 @@ public class PasswordEntry
     public string Website { get; set; }
     public string Note { get; set; }
 
-    public PasswordEntry
-    (
-        string title,
-        string login,
-        string password,
-        string website = "",
-        string note = ""
-    )
+    public PasswordEntry(
+      string title,
+      string login,
+      string password,
+      string website = "",
+      string note = "")
     {
         Title = title;
         Login = login;
         Password = password;
         Website = website;
         Note = note;
+    }
+
+    // ToString-Method
+    // Wird z.B. von Console.WriteLine() implizit aufgerufen
+    public override string ToString()
+    {
+        return $"{Title}\t{Website}\t{Login}";
     }
 }
