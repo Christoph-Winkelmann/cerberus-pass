@@ -1,7 +1,9 @@
 ﻿// Main UI-Flow
 using cerberus_pass;
 
+
 var manager = new PasswordManager();
+var userInterface = new ConsoleUI();
 
 Console.ForegroundColor = ConsoleColor.DarkRed;
 Console.WriteLine("Willkommen zu Cerberus-Pass!");
@@ -28,7 +30,7 @@ do
 
   switch ((MenuOptions)menuChoice)
   {
-    case MenuOptions.List:
+    case MenuOptions.ListVault:
       var vault = manager.GetAll();
       foreach (var item in vault)
       {
@@ -36,55 +38,64 @@ do
       }
       break;
 
-    case MenuOptions.GetOne:
-      // todo: Exception wenn title nicht existiert
-      Console.WriteLine("Welchen Eintrag willst du ansehen? (Title):");
-      var titleToPrint = Console.ReadLine();
-      var entry = manager.GetEntry(titleToPrint);
-      Console.WriteLine(entry + $"\t{entry.Password}");
-      break;
 
-    case MenuOptions.Create:
-      Console.WriteLine("Gebe einen Titel für den Eintrag an:");
-      var title = Console.ReadLine();
-      Console.WriteLine("Gebe einen Login für den Eintrag an:");
-      var login = Console.ReadLine();
-      Console.WriteLine("Gebe ein Passwort für den Eintrag an:");
-      var password = Console.ReadLine();
-      var newEntry = manager.CreateEntry(title, login, password);
-      if (newEntry is null)
+    case MenuOptions.DisplayOneEntry:
+      var requestedTitle = userInterface.GetParameter("den Titel");
+      if (!manager.TitleExists(requestedTitle))
       {
-        System.Console.WriteLine($"Eintrag mit {title} existiert bereits.\nWolltest du diesen Updaten? Oder erstelle einen neuen mit einem anderen Titel.");
+        userInterface.TitleError("nicht");
+        break;
       }
-      else
+      manager.DisplayEntry(requestedTitle);
+      break;
+
+
+    case MenuOptions.CreateNewEntry:
+      var newTitle = userInterface.GetParameter("den Titel");
+      if (manager.TitleExists(newTitle))
       {
-        Console.WriteLine("Neuer Eintrag erfolgreich erstellt:");
-        Console.WriteLine(newEntry); // Gibt Type aus;
+        userInterface.TitleError("bereits");
+        break;
       }
+      var newLogin = userInterface.GetParameter("den Login");
+      var newPassword = userInterface.GetParameter("das Password");
+
+      manager.CreateEntry(newTitle, newLogin, newPassword);
+      userInterface.OperationSuccessfull("Eintrag erstellen");
       break;
 
-    case MenuOptions.Update:
-      Console.WriteLine("Welchen Eintrag willst du ändern? (Title):");
-      var title_to_change = Console.ReadLine();
-      Console.WriteLine(
-        "Gebe einen neuen Titel für den Eintrag an (Leer um nichts zu ändern):");
-      var new_title = Console.ReadLine();
-      Console.WriteLine(
-        "Gebe einen neuen Login für den Eintrag an (Leer um nichts zu ändern):");
-      var new_login = Console.ReadLine();
-      Console.WriteLine(
-        "Gebe ein neues Passwort für den Eintrag an (Leer um nichts zu ändern):");
-      var new_password = Console.ReadLine();
-      var oldEntry = manager.GetEntry(title_to_change);
-      var updatedEntry = manager.UpdateEntry(title_to_change, new PasswordEntry(
-        String.IsNullOrEmpty(new_title) ? oldEntry.Title : new_title,
-        String.IsNullOrEmpty(new_login) ? oldEntry.Login : new_login,
-        String.IsNullOrEmpty(new_password) ? oldEntry.Password : new_password
-      ));
-      Console.WriteLine($"Eintrag {updatedEntry.Title} wurde erfolgreich aktuallisiert.");
-      break;
 
-    case MenuOptions.Delete:
+    case MenuOptions.UpdateEntry:
+      var titleToChange = userInterface.GetParameter("den Titel");
+      if (!manager.TitleExists(titleToChange))
+      {
+        userInterface.TitleError("bereits");
+        break;
+      }
+
+
+      break;
+    // Console.WriteLine("Welchen Eintrag willst du ändern? (Title):");
+    // var title_to_change = Console.ReadLine();
+    // Console.WriteLine(
+    //   "Gebe einen neuen Titel für den Eintrag an (Leer um nichts zu ändern):");
+    // var new_title = Console.ReadLine();
+    // Console.WriteLine(
+    //   "Gebe einen neuen Login für den Eintrag an (Leer um nichts zu ändern):");
+    // var new_login = Console.ReadLine();
+    // Console.WriteLine(
+    //   "Gebe ein neues Passwort für den Eintrag an (Leer um nichts zu ändern):");
+    // var new_password = Console.ReadLine();
+    // var oldEntry = manager.GetEntry(title_to_change);
+    // var updatedEntry = manager.UpdateEntry(title_to_change, new PasswordEntry(
+    //   String.IsNullOrEmpty(new_title) ? oldEntry.Title : new_title,
+    //   String.IsNullOrEmpty(new_login) ? oldEntry.Login : new_login,
+    //   String.IsNullOrEmpty(new_password) ? oldEntry.Password : new_password
+    // ));
+    // Console.WriteLine($"Eintrag {updatedEntry.Title} wurde erfolgreich aktuallisiert.");
+    // break;
+
+    case MenuOptions.DeleteEntry:
       Console.WriteLine("Welchen Eintrag willst du Löschen? (Title):");
       var titleToDelete = Console.ReadLine();
       if (manager.DeleteEntry(titleToDelete))

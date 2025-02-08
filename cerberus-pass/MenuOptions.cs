@@ -2,9 +2,9 @@ namespace cerberus_pass;
 
 public enum MenuOptions
 {
-    List = 1,
-    GetOne,
-    Create,
-    Update,
-    Delete
+    ListVault = 1,
+    DisplayOneEntry,
+    CreateNewEntry,
+    UpdateEntry,
+    DeleteEntry
 }

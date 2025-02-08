@@ -1,4 +1,6 @@
-﻿namespace cerberus_pass;
+﻿using System.Security.Cryptography.X509Certificates;
+
+namespace cerberus_pass;
 
 public class PasswordManager
 {
@@ -14,17 +16,15 @@ public class PasswordManager
 
   public List<PasswordEntry> GetAll() => vault;
 
-  public PasswordEntry CreateEntry(
+
+  public void CreateEntry(
     string title,
     string login,
     string password,
     string website = "",
     string note = "")
   {
-    if (vault.Any(x => x.Title == title))
-    {
-      return null;
-    }
+
     var newEntry = new PasswordEntry(
       title,
       login,
@@ -33,13 +33,18 @@ public class PasswordManager
       note
     );
     vault.Add(newEntry);
-    return newEntry;
   }
 
   // GetEntry
   public PasswordEntry GetEntry(string title) =>
     vault.Find(x => x.Title == title);
 
+
+  public string DisplayEntry(string title)
+  {
+    var requestedEntry = vault.Find(x => x.Title == title);
+    return $"{requestedEntry.Title}\t{requestedEntry.Login}\t{requestedEntry.Password}";
+  }
 
   // UpdateEntry
   public PasswordEntry UpdateEntry(string titleToChange, PasswordEntry newEntry)
@@ -57,25 +62,10 @@ public class PasswordManager
   public bool DeleteEntry(string titleToDelete) =>
     vault.RemoveAll(x => x.Title == titleToDelete) > 0;
 
-  /*
-  public bool DeleteEntry(string titleToDelete)
-  {
-    var deleteCount = 0;
-    for (int i = 0; i > vault.Count; i++)
-    {
-      if (vault[i].Title == titleToDelete)
-      {
-        vault.Remove(vault[i]);
-        deleteCount++;
-      }
-    }
-    if (deleteCount > 0)
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
-  } */
+
+
+
+  // Check if a given Title already exists in the Vault
+  public bool TitleExists(string title) => vault.Any(x => x.Title == title);
+
 }
