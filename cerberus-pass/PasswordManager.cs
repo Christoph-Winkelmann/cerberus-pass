@@ -11,6 +11,7 @@ public class PasswordManager
     vault = [];
   }
 
+  // Password Stuff
   public void SetMasterPassword(string password)
   {
     masterPassword = password;
@@ -20,6 +21,8 @@ public class PasswordManager
 
   public bool CheckPasswordConfirmation(string password1, string password2) => password1 == password2;
 
+
+  // Vault Entry Stuff
   public List<string> GetVault()
   {
     var allEntries = new List<string>();
@@ -49,7 +52,6 @@ public class PasswordManager
     vault.Add(newEntry);
   }
 
-  // GetEntry
   public PasswordEntry GetEntry(string title)
   {
     var requestedEntry = vault.Find(x => x.Title == title);
@@ -62,7 +64,6 @@ public class PasswordManager
     return $"Titel: {requestedEntry.Title} | Login: {requestedEntry.Login} | Password: {requestedEntry.Password} | Website: {requestedEntry.Website} | Notiz: {requestedEntry.Note}";
   }
 
-  // UpdateEntry
   public void UpdateEntry(
     string oldTitle,
     string title,
@@ -87,20 +88,14 @@ public class PasswordManager
     vault[indexToUpdate] = updatedEntry;
   }
 
-  // DeleteEntry
   public bool DeleteEntry(string titleToDelete) =>
     vault.RemoveAll(x => x.Title == titleToDelete) > 0;
 
 
-
-
-  // Check if a given Title already exists in the Vault
+  // Validation Stuff, maybe move Input-related checks to ConsoleUI
   public bool TitleExists(string title) => vault.Any(x => x.Title == title);
 
   public bool IsTitleTooShort(string title) => title.Length < 3 ? true : false;
-
-
-
 
   public bool IsStringEmpty(string input) => input == "" ? true : false;
 }
