@@ -6,5 +6,6 @@ public enum MenuOptions
     DisplayOneEntry,
     CreateNewEntry,
     UpdateEntry,
-    DeleteEntry
+    DeleteEntry,
+    ExitProgram
 }

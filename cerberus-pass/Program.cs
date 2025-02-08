@@ -1,116 +1,129 @@
 ﻿// Main UI-Flow
 using cerberus_pass;
+using Microsoft.VisualBasic;
 
 
 var manager = new PasswordManager();
 var userInterface = new ConsoleUI();
-
-Console.ForegroundColor = ConsoleColor.DarkRed;
-Console.WriteLine("Willkommen zu Cerberus-Pass!");
-Console.ResetColor();
+var masterPasswordSet = false;
+var programIsRunning = true;
 
 do
 {
-  Console.WriteLine("Wähle was du tun willst:");
+  userInterface.InitializeMasterPassword();
+  var newMasterPassword = userInterface.GetParameter("das Master-Passwort");
+  if (newMasterPassword == "") { userInterface.EmptyStringError(); Console.ReadLine(); continue; }
+  userInterface.PromptConfirmPassword();
+  if (!manager.CheckPasswordConfirmation(newMasterPassword, userInterface.GetParameter("das Password erneut"))) { userInterface.WrongPasswordError(); Console.ReadLine(); continue; }
+  manager.SetMasterPassword(newMasterPassword);
+  masterPasswordSet = true;
+} while (masterPasswordSet == false);
 
-  Console.WriteLine("""
-  1. Passwort-Liste ausgeben
-  2. Passwort mit ID ausgeben
-  3. Neues Passwort erstellen
-  4. Vorhandenes Passwort bearbeiten
-  5. Passwort löschen
-""");
+
+Console.Clear();
+userInterface.Greeting();
+
+do
+{
+
+  userInterface.MainMenu();
 
   var userInput = Console.ReadLine();
-
   int menuChoice;
-
   if (!int.TryParse(userInput, out menuChoice))
     continue;
 
   switch ((MenuOptions)menuChoice)
   {
     case MenuOptions.ListVault:
-      var vault = manager.GetAll();
-      foreach (var item in vault)
+      if (manager.GetVault().Count == 0) { userInterface.NoEntriesError(); break; }
+      var allEntries = manager.GetVault();
+      foreach (var entry in allEntries)
       {
-        Console.WriteLine(item);
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        System.Console.WriteLine(entry);
+        Console.ResetColor();
       }
       break;
 
 
     case MenuOptions.DisplayOneEntry:
+      if (!manager.CheckMasterPassword(userInterface.GetParameter("das Master-Passwort"))) { userInterface.WrongPasswordError(); break; }
+      if (manager.GetVault().Count == 0) { userInterface.NoEntriesError(); break; }
       var requestedTitle = userInterface.GetParameter("den Titel");
-      if (!manager.TitleExists(requestedTitle))
-      {
-        userInterface.TitleError("nicht");
-        break;
-      }
-      manager.DisplayEntry(requestedTitle);
+      if (!manager.TitleExists(requestedTitle)) { userInterface.TitleError("nicht"); break; }
+      Console.ForegroundColor = ConsoleColor.Cyan;
+      System.Console.WriteLine(manager.DisplayEntry(requestedTitle));
+      Console.ResetColor();
       break;
 
 
     case MenuOptions.CreateNewEntry:
       var newTitle = userInterface.GetParameter("den Titel");
-      if (manager.TitleExists(newTitle))
-      {
-        userInterface.TitleError("bereits");
-        break;
-      }
+      if (newTitle == "" || manager.IsTitleTooShort(newTitle)) { userInterface.TitleLengthError(); break; }
+      else if (manager.TitleExists(newTitle)) { userInterface.TitleError("bereits"); break; }
       var newLogin = userInterface.GetParameter("den Login");
+      if (newLogin == "") { userInterface.EmptyStringError(); break; }
       var newPassword = userInterface.GetParameter("das Password");
-
-      manager.CreateEntry(newTitle, newLogin, newPassword);
+      if (newPassword == "") { userInterface.EmptyStringError(); break; }
+      userInterface.PromptConfirmPassword();
+      if (!manager.CheckPasswordConfirmation(newPassword, userInterface.GetParameter("das Password erneut"))) { userInterface.WrongPasswordError(); break; }
+      var newWebsite = userInterface.GetParameter("die Website");
+      var newNote = userInterface.GetParameter("die Notiz");
+      manager.CreateEntry(newTitle, newLogin, newPassword, newWebsite, newNote);
       userInterface.OperationSuccessfull("Eintrag erstellen");
       break;
 
 
     case MenuOptions.UpdateEntry:
+      if (!manager.CheckMasterPassword(userInterface.GetParameter("das Master-Passwort"))) { userInterface.WrongPasswordError(); break; }
+      if (manager.GetVault().Count == 0) { userInterface.NoEntriesError(); break; }
       var titleToChange = userInterface.GetParameter("den Titel");
-      if (!manager.TitleExists(titleToChange))
-      {
-        userInterface.TitleError("bereits");
-        break;
-      }
+      if (titleToChange == "") { userInterface.EmptyStringError(); break; }
+      else if (!manager.TitleExists(titleToChange)) { userInterface.TitleError("nicht"); break; }
 
+      var updatedTitle = userInterface.GetParameter("den neuen Titel");
+      var updatedLogin = userInterface.GetParameter("den neuen Login");
+      var updatedPassword = userInterface.GetParameter("das neue Password");
+      userInterface.PromptConfirmPassword();
+      if (!manager.CheckPasswordConfirmation(updatedPassword, userInterface.GetParameter("das Password erneut"))) { userInterface.WrongPasswordError(); break; }
+      var updatedWebsite = userInterface.GetParameter("die neue Website");
+      var updatedNote = userInterface.GetParameter("die neue Notiz");
 
+      manager.UpdateEntry(titleToChange, updatedTitle, updatedLogin, updatedPassword, updatedWebsite, updatedNote);
+
+      userInterface.OperationSuccessfull("Eintrag aktualisieren");
       break;
-    // Console.WriteLine("Welchen Eintrag willst du ändern? (Title):");
-    // var title_to_change = Console.ReadLine();
-    // Console.WriteLine(
-    //   "Gebe einen neuen Titel für den Eintrag an (Leer um nichts zu ändern):");
-    // var new_title = Console.ReadLine();
-    // Console.WriteLine(
-    //   "Gebe einen neuen Login für den Eintrag an (Leer um nichts zu ändern):");
-    // var new_login = Console.ReadLine();
-    // Console.WriteLine(
-    //   "Gebe ein neues Passwort für den Eintrag an (Leer um nichts zu ändern):");
-    // var new_password = Console.ReadLine();
-    // var oldEntry = manager.GetEntry(title_to_change);
-    // var updatedEntry = manager.UpdateEntry(title_to_change, new PasswordEntry(
-    //   String.IsNullOrEmpty(new_title) ? oldEntry.Title : new_title,
-    //   String.IsNullOrEmpty(new_login) ? oldEntry.Login : new_login,
-    //   String.IsNullOrEmpty(new_password) ? oldEntry.Password : new_password
-    // ));
-    // Console.WriteLine($"Eintrag {updatedEntry.Title} wurde erfolgreich aktuallisiert.");
-    // break;
+
 
     case MenuOptions.DeleteEntry:
-      Console.WriteLine("Welchen Eintrag willst du Löschen? (Title):");
-      var titleToDelete = Console.ReadLine();
-      if (manager.DeleteEntry(titleToDelete))
-        Console.WriteLine($"Eintrag {titleToDelete} wurde erfolgreich entfernt");
-      else
-        Console.WriteLine(
-          $"Fehler beim löschen des Eintrags: {titleToDelete} wurde nicht gefunden!");
+      if (!manager.CheckMasterPassword(userInterface.GetParameter("das Master-Passwort"))) { userInterface.WrongPasswordError(); break; }
+      if (manager.GetVault().Count == 0) { userInterface.NoEntriesError(); break; }
+      var titleToDelete = userInterface.GetParameter("den Titel");
+      if (!manager.TitleExists(titleToDelete)) { userInterface.TitleError("nicht"); break; }
+      manager.DeleteEntry(titleToDelete);
+      userInterface.OperationSuccessfull("Eintrag löschen");
       break;
 
     default:
-      // Fehler anzeigen -> Eingabe-Hint (1-5)
-      // Eingabe wiederholen
       System.Console.WriteLine("Falsche Eingabe! Valide Optionen: 1-5");
+      break;
+
+    case MenuOptions.ExitProgram:
+      var choice = userInterface.ConfirmExitProgram();
+      switch (choice)
+      {
+        case "j":
+          programIsRunning = false;
+          break;
+        case "n":
+          break;
+        default:
+          System.Console.WriteLine("Falsche Eingabe! Valide Optionen: j/n");
+          break;
+      }
       break;
   }
   Console.ReadKey();
   Console.Clear();
-} while (true);
+} while (programIsRunning);
